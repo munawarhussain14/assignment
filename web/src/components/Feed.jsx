@@ -3,25 +3,30 @@ import { useAuth } from "../context/AuthContext";
 import { useApi } from "../hooks/useApi";
 import PostCard from "./PostCard";
 
+// Number of posts to load per page
 const ITEMS_PER_PAGE = 10;
 
+/**
+ * Feed component that displays posts with infinite scroll functionality
+ * Handles post loading, deletion and user authentication
+ */
 const Feed = () => {
   const { token, user } = useAuth();
-  const [displayedPosts, setDisplayedPosts] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const observerRef = useRef();
+  const [displayedPosts, setDisplayedPosts] = useState([]); // Array of posts currently displayed
+  const [currentPage, setCurrentPage] = useState(1); // Current page number
+  const [totalPages, setTotalPages] = useState(0); // Total number of pages
+  const [hasMore, setHasMore] = useState(true); // Whether there are more posts to load
+  const [isLoadingMore, setIsLoadingMore] = useState(false); // Loading state for pagination
+  const observerRef = useRef(); // Ref for intersection observer
   const { logout } = useAuth();
 
-  // Initial load of posts
+  // Initial load of posts using custom useApi hook
   const { data, loading, error, refetch } = useApi("/posts", {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
     params: { page: 1, limit: ITEMS_PER_PAGE },
   });
 
-  // Load initial posts when data changes
+  // Update state when initial posts are loaded
   useEffect(() => {
     if (data?.posts) {
       setDisplayedPosts(data.posts);
@@ -31,7 +36,10 @@ const Feed = () => {
     }
   }, [data]);
 
-  // Function to load more posts
+  /**
+   * Loads the next page of posts when user scrolls to bottom
+   * Updates state with new posts and pagination info
+   */
   const loadMorePosts = useCallback(async () => {
     if (isLoadingMore || !hasMore) return;
 
@@ -71,7 +79,10 @@ const Feed = () => {
     }
   }, [currentPage, hasMore, isLoadingMore, token, totalPages]);
 
-  // Intersection Observer for infinite scroll
+  /**
+   * Sets up intersection observer for infinite scroll
+   * Triggers loadMorePosts when last post comes into view
+   */
   const lastElementRef = useCallback(
     (node) => {
       if (loading || isLoadingMore) return;
@@ -93,7 +104,11 @@ const Feed = () => {
     [loading, hasMore, isLoadingMore, loadMorePosts]
   );
 
-  // Delete post functionality
+  /**
+   * Handles post deletion
+   * Removes post from displayed posts and triggers refetch
+   * @param {string} postId - ID of post to delete
+   */
   const handleDeletePost = async (postId) => {
     try {
       const response = await fetch(`/posts/${postId}`, {
@@ -117,6 +132,7 @@ const Feed = () => {
     }
   };
 
+  // Display error state if posts failed to load
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -139,6 +155,7 @@ const Feed = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header with user info and logout */}
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Feed</h1>
           <div className="flex items-center space-x-4">
@@ -157,7 +174,7 @@ const Feed = () => {
           </div>
         </div>
 
-        {/* Page info */}
+        {/* Pagination info */}
         {totalPages > 0 && (
           <div className="mb-4 text-sm text-gray-600">
             Page {currentPage} of {totalPages} • {displayedPosts.length} posts
@@ -165,6 +182,7 @@ const Feed = () => {
           </div>
         )}
 
+        {/* Posts list with infinite scroll */}
         <div className="space-y-4">
           {displayedPosts.map((post, index) => {
             if (displayedPosts.length === index + 1) {
@@ -190,12 +208,14 @@ const Feed = () => {
           })}
         </div>
 
+        {/* Loading spinner */}
         {(loading || isLoadingMore) && (
           <div className="flex justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
           </div>
         )}
 
+        {/* End of feed messages */}
         {!hasMore && displayedPosts.length > 0 && (
           <div className="text-center py-8 text-gray-500">
             No more posts to load

@@ -1,8 +1,17 @@
+/**
+ * Import Swagger JSDoc library for API documentation generation
+ */
 const swaggerJsdoc = require("swagger-jsdoc");
 
+/**
+ * Swagger configuration options
+ */
 const options = {
   definition: {
+    // OpenAPI specification version
     openapi: "3.0.0",
+
+    // API information
     info: {
       title: "Express.js RBAC API",
       version: "1.0.0",
@@ -17,13 +26,18 @@ const options = {
         url: "https://opensource.org/licenses/MIT",
       },
     },
+
+    // Server configurations
     servers: [
       {
         url: "http://localhost:3000",
         description: "Development server",
       },
     ],
+
+    // Components section containing reusable schemas and security definitions
     components: {
+      // Security scheme definitions
       securitySchemes: {
         bearerAuth: {
           type: "http",
@@ -32,7 +46,10 @@ const options = {
           description: "JWT token for authentication",
         },
       },
+
+      // Reusable schema definitions
       schemas: {
+        // User schema definition
         User: {
           type: "object",
           properties: {
@@ -49,6 +66,8 @@ const options = {
             },
           },
         },
+
+        // Post schema definition
         Post: {
           type: "object",
           properties: {
@@ -69,6 +88,8 @@ const options = {
             },
           },
         },
+
+        // Login request schema
         LoginRequest: {
           type: "object",
           required: ["userId"],
@@ -80,6 +101,8 @@ const options = {
             },
           },
         },
+
+        // Login response schema
         LoginResponse: {
           type: "object",
           properties: {
@@ -97,6 +120,8 @@ const options = {
             },
           },
         },
+
+        // Posts response schema
         PostsResponse: {
           type: "object",
           properties: {
@@ -112,6 +137,8 @@ const options = {
             },
           },
         },
+
+        // Delete post response schema
         DeletePostResponse: {
           type: "object",
           properties: {
@@ -124,6 +151,8 @@ const options = {
             },
           },
         },
+
+        // Error response schema
         Error: {
           type: "object",
           properties: {
@@ -137,6 +166,8 @@ const options = {
             },
           },
         },
+
+        // Health check response schema
         HealthResponse: {
           type: "object",
           properties: {
@@ -152,15 +183,24 @@ const options = {
         },
       },
     },
+
+    // Global security requirement
     security: [
       {
         bearerAuth: [],
       },
     ],
   },
-  apis: ["./controllers/*.js", "./app.js"], // Path to the API docs
+  // Paths to files containing API documentation
+  apis: ["./controllers/*.js", "./app.js"],
 };
 
+/**
+ * Generate Swagger specification from options
+ */
 const specs = swaggerJsdoc(options);
 
+/**
+ * Export the Swagger specification
+ */
 module.exports = specs;
